@@ -1,0 +1,15 @@
+<ul>
+    {{ header }}
+</ul>
+{% if restaurant_list %}
+    <ul>
+    {% for restaurant in restaurant_list %}
+        <!--<li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li> -->
+        <!--<li>{{ restaurant.name }}</li>-->
+        <li><a href="{% url 'food:menu' restaurant.id %}">{{ restaurant.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No Restuarant is available in this area</p>
+{% endif %}
+

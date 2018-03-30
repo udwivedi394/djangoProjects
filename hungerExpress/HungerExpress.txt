@@ -1,0 +1,249 @@
+HungerExpress Log:
+
+1. Starting new Django Project
+$django-admin startproject HungerExpress
+
+2. Deleting the HungerExpress project, as the name is starting with caps and will cause enough unease to walkthrough the directories
+$rm -rf HungerExpress/
+
+3. Starting new Django Project
+$django-admin startproject hungerExpress
+
+----------------------------
+Note: Here ./ is the main directory of hungerExpress/
+----------------------------
+
+4. Start the app
+$python3 manage.py startapp food
+
+5. Creating dummy view of food
+	written index function in ./food/views.py
+	register this view in ./food/urls.py
+	register this view in ./hungerExpress/urls.py
+
+Here we are keeping the indexing of views in food/ in food app itself, by registering them in food/urls.py
+At the project level (HungerExpress), we are registering this food app subindex by using include.
+By seeing the include, the system clips off the url till the name given and passes off the remaining url to the subindex of the app.
+
+Registered successfully.
+
+6. Setting up the Database
+open the ./hungerExpress/settings.py
+
+In the DATABASES = {	--following are the changes
+'ENGINE' : 'django.db.backends.mysql',
+'NAME' : 'hungerExpressDB', #you must have a database created by now, read below database creation steps
+'USER' : 'utk3394',
+'PASSWORD' : 'password',
+'HOST' : 'localhost',
+'PORT' : '8000',
+}
+
+change the TIME_ZONE as well
+TIME_ZONE = 'Asia/Kolkata'
+
+----------------------------------
+SQL QUERIES
+
+$mysql -u root -p
+
+mysql>create database hungerExpressDB;
+Query OK, 1 row affected (0.12 sec)
+
+mysql> create user 'utk3394'@'localhost' identified by 'password';
+Query OK, 0 rows affected (0.31 sec)
+
+mysql> grant all on hungerExpressDB.* to 'utk3394' identified by 'password';
+Query OK, 0 rows affected (0.02 sec)
+---------------------------------
+
+7. By default there are many default apps included in settings.py. These are for the common cause.
+Which need at least one table to work with. Therefore, we migrate all the apps to create tables in database. For that, we do
+
+$python3 manage.py migrate
+
+Migrations applied successfully.
+
+---------------------------------
+SQL QUERY
+
+mysql> use hungerExpressDB;
+Database changed
+
+mysql> SHOW TABLES;
++----------------------------+
+| Tables_in_hungerExpressDB  |
++----------------------------+
+| auth_group                 |
+| auth_group_permissions     |
+| auth_permission            |
+| auth_user                  |
+| auth_user_groups           |
+| auth_user_user_permissions |
+| django_admin_log           |
+| django_content_type        |
+| django_migrations          |
+| django_session             |
++----------------------------+
+10 rows in set (0.00 sec)
+---------------------------------
+
+8. Now, we will create models of our app food.
+
+Following are the objects going to be present in our app:
+	a. Restaurant
+	b. Food Item
+	c. User
+
+Restaurant:
+	-id; int, pk
+	-name; varchar(40), not null
+	-address; varchar2(150)
+	-area; varchar(40), not null
+	-city; varchar2(40) not null
+	-zipcode; number(6) not null
+	-contactno; number(10), unique
+
+Menu:
+	-item_id; int
+	-restaurant_id; int fk(restaurant id)
+	-item_name; varchar(	40)
+	-category; varchar(40)
+	-subcategory; varchar(40)
+	-price; number
+	-constraint pk(restaurant_id, item_id)
+
+For user, I'm implementing two separate tables:
+	i. this will contain basic information:
+	user_validation:
+		-id; int, pk
+		-user_name; varchar2(30), unique, not null
+		-password; varchar2(20)
+	ii. this will contain all the additional information:
+	user_meta:
+		-id; int pk
+		-user_id; int, fk(user_validation.id)
+		-metaclass; varchar2(40), CHECK('f_name','l_name','mobile_no','email_id','door','city','state')
+		-metavalue; varchar2(200)
+
+
+9. Creating models
+
+	To validate the zipcode of length only and only 6, using Regex Validator
+Till this point defined 3 models UserValidation, UserMeta, Restaurant
+
+10. Activating the models
+by adding 'food.apps.FoodConfig' in ./HungerExpress/settings.py at INSTALLED_APPS
+
+11. Now making the migration script:
+$python3 manage.py makemigrations food
+
+Migrations for 'food':
+  food/migrations/0001_initial.py
+    - Create model Restaurant
+    - Create model UserMeta
+    - Create model UserValidation
+    - Add field user_id to usermeta
+
+12. We can check the current migration script at ./food/migrations/0001_initial.py
+
+13. Unfortunately, MySQL does not supports the CHECK constraint
+To overcome, this we need to write additional triggers to maintain data Integrity
+
+14. While defining category and subcategory; in order to have subcategory I need to check that item does have a category already
+
+Implemented the check_category as separate function, but migration script is giving error:
+
+  File "/home/utkarsh/utk_reboot/python/django_project/hungerExpress/food/models.py", line 33, in Menu
+    validators=[check_category])
+NameError: name 'check_category' is not defined
+
+Resolved it. I've declared the function below the line where it was being used
+
+Now the problem is that I'm unable to pass arguments to the function
+
+Not able to find any concrete solution of this
+resolve this validation issue later
+
+Till this point implemented:
+	-UserValidation
+	-UserMeta
+	-Restaurant
+	-Menu
+
+$python3 manage.py makemigrations polls
+
+Migrations for 'food':
+  food/migrations/0001_initial.py
+    - Create model Menu
+    - Create model Restaurant
+    - Create model UserMeta
+    - Create model UserValidation
+    - Add field user_id to usermeta
+    - Add field restaurant_id to menu
+
+15. Implementing the migration script on database
+$python3 manage.py sqlmigrate food 0001
+=========================================================================
+BEGIN;
+--
+-- Create model Menu
+--
+CREATE TABLE `food_menu` (`item_id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `item_name` varchar(40) NOT NULL, `category` varchar(40) NULL, `sub_category` varchar(40) NULL, `price` numeric(6, 2) NOT NULL);
+--
+-- Create model Restaurant
+--
+CREATE TABLE `food_restaurant` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `name` varchar(40) NOT NULL, `address` varchar(150) NOT NULL, `area` varchar(40) NOT NULL, `city` varchar(40) NOT NULL, `zipcode` varchar(6) NOT NULL, `contact_no` varchar(10) NOT NULL UNIQUE);
+--
+-- Create model UserMeta
+--
+CREATE TABLE `food_usermeta` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `metaclass` varchar(40) NOT NULL, `metavalue` varchar(200) NOT NULL);
+--
+-- Create model UserValidation
+--
+CREATE TABLE `food_uservalidation` (`id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, `user_name` varchar(30) NOT NULL UNIQUE, `password` varchar(20) NOT NULL);
+--
+-- Add field user_id to usermeta
+--
+ALTER TABLE `food_usermeta` ADD COLUMN `user_id_id` integer NOT NULL;
+--
+-- Add field restaurant_id to menu
+--
+ALTER TABLE `food_menu` ADD COLUMN `restaurant_id_id` integer NOT NULL;
+ALTER TABLE `food_usermeta` ADD CONSTRAINT `food_usermeta_user_id_id_d4e788b2_fk_food_uservalidation_id` FOREIGN KEY (`user_id_id`) REFERENCES `food_uservalidation` (`id`);
+ALTER TABLE `food_menu` ADD CONSTRAINT `food_menu_restaurant_id_id_8d73902f_fk_food_restaurant_id` FOREIGN KEY (`restaurant_id_id`) REFERENCES `food_restaurant` (`id`);
+COMMIT;
+==========================================================================
+
+16. Display the above schema
+$python3 manage.py sqlmigrate food 0001
+
+17. Apply the schema on database
+$python3 manage.py migrate	--> Implemented
+
+18. Creating Restaurant View
+This view displays the list of restaurant present in the area based on four digits of passed zipcode
+restaurantDisplay(request, zipcode_t)
+
+created template ./food/template/food/restaurantListDisp.html
+
+Registered with url: "localhost:8000/food/<str:zipcode>/" in ./food/urls.py
+
+Successfully able to display the Restaurants available in the area
+
+19. Creating Menu Listing
+Successfully created menu listing. 
+Registered with url: "localhost:8000/food/restaurant/<int:restaurant_id>/"
+created template "./food/templates/food/menuDisplay.html"
+
+20. While inserting the hyperlink of Dominos, with 
+<li><a href="{% url 'food:menu' restaurant.id %}">{{ restaurant.name }}</a></li>
+
+Getting following error:
+Exception Type: NoReverseMatch
+Exception Value: 'food' is not a registered namespacece
+
+To resolve this, added app_name in ./food/urls.py
+
+21. Creating signup form:
+

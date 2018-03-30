@@ -1,0 +1,13 @@
+<ul>
+    {{ header }}
+</ul>
+{% if menu_item_list %}
+    <ul>
+    {% for menu in menu_item_list %}
+        <!--<li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li> -->
+        <li>{{ menu.item_name }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Unfortunately! No items are available in this restaurant</p>
+{% endif %}

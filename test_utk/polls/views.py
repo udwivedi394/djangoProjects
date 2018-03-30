@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import loader
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.views import generic
 
 from . import models
 """
@@ -25,7 +26,7 @@ def index(request):
     #shortcut render(request, template name, context)
     return render(request, 'polls/index.html', context)
 """
-
+"""
 def index(request):
     latest_question_list = models.Question.objects.all()
     response = "Hello, world. You're at the polls index"#.<br>"
@@ -39,7 +40,7 @@ def index(request):
     
     #shortcut render(request, template name, context)
     return render(request, 'polls/index.html', context)
-
+"""
 """
 def detail(request, question_id):
     try:
@@ -50,19 +51,21 @@ def detail(request, question_id):
     response = "You're looking at question %s."
     return HttpResponse(response%question)
 """
-
+"""
 def detail(request, question_id):
     question = get_object_or_404(models.Question, pk=question_id)
     return render(request, 'polls/details.html', {'question':question})
+"""
 """
 def results(request, question_id):
     response = "You're looking at the results of question %s."
     return HttpResponse(response%question_id)
 """
+"""
 def results(request, question_id):
     question = get_object_or_404(models.Question, pk=question_id)
     return render(request, 'polls/results.html', {'question':question})
-
+"""
 """
 def vote(request, question_id):
     response = "You're voting on question %s."
@@ -76,7 +79,8 @@ def vote(request, question_id):
         selected_choice.votes += 1
         selected_choice.save()
         
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+        #return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+        return HttpResponseRedirect(reverse('polls:result', args=(question.id,)))
     
     except (KeyError, models.Choice.DoesNotExist):
         return render(request, 'polls/details.html',
@@ -84,3 +88,18 @@ def vote(request, question_id):
             'question':question,
             'error_message': "You didn't seleceted any choice, you moron!",
         })
+
+class IndexView(generic.ListView):
+    template_name = 'polls/index.html'
+    context_object_name = 'latest_question_list'
+    
+    def get_queryset(self):
+        return models.Question.objects.all()
+
+class DetailView(generic.DetailView):
+    model = models.Question
+    template_name = 'polls/details.html'
+
+class ResultsView(generic.DetailView):
+    model = models.Question
+    template_name = 'polls/results.html'
