@@ -119,11 +119,23 @@ For user, I'm implementing two separate tables:
 		-id; int, pk
 		-user_name; varchar2(30), unique, not null
 		-password; varchar2(20)
+-------------------------------------------------------------
+Schema being edited on 31-03-2018
+		-f_name; varchar2(40), not null
+		-l_name; varchar2(40), not null
+		-email_id; varchar2(40), not null
+		-contact_no; varchar2(20)
+		-address; varchar2(10)
+		-area; varchar2(20)	
+		-city; varchar2(20)
+		-state; varchar2(20)
+		-zipcode; number(6,0)
+-------------------------------------------------------------
 	ii. this will contain all the additional information:
 	user_meta:
 		-id; int pk
 		-user_id; int, fk(user_validation.id)
-		-metaclass; varchar2(40), CHECK('f_name','l_name','mobile_no','email_id','door','city','state')
+		-metaclass; varchar2(40), #CHECK('f_name','l_name','mobile_no','email_id','door','city','state')
 		-metavalue; varchar2(200)
 
 
@@ -171,7 +183,7 @@ Till this point implemented:
 	-Restaurant
 	-Menu
 
-$python3 manage.py makemigrations polls
+$python3 manage.py makemigrations food
 
 Migrations for 'food':
   food/migrations/0001_initial.py
@@ -216,10 +228,14 @@ COMMIT;
 ==========================================================================
 
 16. Display the above schema
-$python3 manage.py sqlmigrate food 0001
+$	
 
 17. Apply the schema on database
 $python3 manage.py migrate	--> Implemented
+Operations to perform:
+  Apply all migrations: admin, auth, contenttypes, food, sessions
+Running migrations:
+  Applying food.0001_initial... OK
 
 18. Creating Restaurant View
 This view displays the list of restaurant present in the area based on four digits of passed zipcode
@@ -246,4 +262,43 @@ Exception Value: 'food' is not a registered namespacece
 To resolve this, added app_name in ./food/urls.py
 
 21. Creating signup form:
+Following fields are included:
+-First Name
+-Last Name	
+-Email ID	
+-Username	
+-Password	
+-Contact No 	
+-Address 	
+-Area 	
+-City 	
+-Zipcode
+
+The problem that I'm currently facing is that, two tables uservalidation and UserMeta are connected.
+In order to make objects of UserMeta class, there should exist an object of uservalidation.
+But, if there is any error while creating the objects we should be able to delete them.
+
+Therefore, I've decided to change the schema of the UserValidation to include all the neccessary fields.
+Go above and check again.
+
+22. After several attempts of remove the database and running the migrations again and again.
+Now successful.
+
+23. Creating Login Page
+Login Page done.
+
+
+24. Downloaded the data for database:
+https://www.generatedata.com
+
+----------------------------------
+To run SQL script on MySQL:
+mysql> source path_to_the_script
+----------------------------------
+
+The SQL scripts are stored in directory ./SQLscripts/
+
+Restaurant:
+For the sake of data, removed the unique constraint from contact_no field in food_restaurant table
+
 
