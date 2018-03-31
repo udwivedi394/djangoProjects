@@ -1,0 +1,101 @@
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+<form action="{% url 'food:signup' %}" method="post">
+{% csrf_token %}
+    <ul>
+    <table width = "450px">
+    <tr>
+        <td>
+        <label for="f_name">First Name </label>
+        </td>
+        <td>
+        <input type = "text" name = "f_name" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="l_name">Last Name </label>
+        </td>
+        <td>
+        <input type = "text" name = "l_name" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="email_id">Email ID </label>
+        </td>
+        <td>
+        <input type = "text" name = "email_id" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="user_name">Username </label>
+        </td>
+        <td>
+        <input type = "text" name = "user_name" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="password">Password</label>
+        </td>
+        <td>
+        <input type = "password" name = "password" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="contact_no">Contact No </label>
+        </td>
+        <td>
+        <input type = "text" name = "contact_no" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="address">Address </label>
+        </td>
+        <td>
+        <input type = "text" name = "address" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="area">Area</label>
+        </td>
+        <td>
+        <input type = "text" name = "area" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="city">City</label>
+        </td>
+        <td>
+        <input type = "text" name = "city" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="state">State</label>
+        </td>
+        <td>
+        <input type = "text" name = "state" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+        <td>
+        <label for="zipcode">Zipcode</label>
+        </td>
+        <td>
+        <input type = "text" name = "zipcode" maxlength="50">
+        </td>
+    </tr>
+    <tr>
+    <td colspan="2" style="text-align:center">
+    <input type = "submit" value="submit">
+    </td>
+    </tr>
+    </table>
+    </ul>
+</form>

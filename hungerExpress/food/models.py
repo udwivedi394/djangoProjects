@@ -35,6 +35,14 @@ class CheckCategory:
 class UserValidation(models.Model):
     user_name = models.CharField(max_length=30, unique=True, null=False)
     password = models.CharField(max_length=20, null=False)
+    f_name = models.CharField(max_length=20, null=False)
+    l_name = models.CharField(max_length=20, null=False)
+    email_id = models.CharField(max_length=40, null=False)
+    contact_no = models.CharField(max_length=20, null=True)
+    address = models.CharField(max_length=10, null=True)
+    area = models.CharField(max_length=20, null=True)
+    city = models.CharField(max_length=20, null=True)
+    state = models.CharField(max_length=20, null=True)
     def __str__(self):
         return self.user_name
 
