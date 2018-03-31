@@ -1,5 +1,5 @@
 {% if error_message %}<p><strong>{{ error_message }}</strong><p>{% endif %}
-<form action="{% url 'food:login' %}" method="post">
+<form action="{% url 'food:loginValidate' %}" method="post">
 {% csrf_token %}
     <ul>
     <table width="480px">
@@ -16,8 +16,12 @@
         <label for="password"> Password </label>
     </td>
     <td>
-        <input type="text" name="password" maxlength=50>
+        <input type="password" name="password" maxlength=50>
     </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align:left">
+        <a href="{% url 'food:signupform' %}">New user? Sign up now!</a>
     </tr>
     <tr>
         <td colspan="2" style="text-align:center">

@@ -1,23 +1,38 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.core.validators import EmailValidator
 from django.core import exceptions
+from django.urls import reverse
 from . import models
 
 # Create your views here.
 def index(request):
-    return HttpResponse("Hi! You're here at food app. We are developing!")
+    #return HttpResponse("Hi! You're here at food app. We are developing!")
+    return render(request, 'food/index.html',)
 
 
-def restaurantDisplay(request, zipcode_t):
-    header = 'Below is the list of restaurants available in your nearby location'
-    restaurant_list = models.Restaurant.objects.filter(zipcode__startswith=zipcode_t[:4])
-
-    context = {
+def restaurantDisplay(request, username):
+    context = {}
+    try:
+        if request.POST['area_check'] == 'TRUE':
+            header = 'Below is the list of restaurants available in your nearby location'
+            user = models.UserValidation.objects.get(user_name=username)
+            zipcode_t = str(user.zipcode)
+            restaurant_list = models.Restaurant.objects.filter(zipcode__startswith=zipcode_t[:4])
+            context['location_specific']='True'
+        else:
+            raise KeyError
+    except KeyError:        
+        header = "Hi! Check our vast range of restaurant partners"
+        restaurant_list = models.Restaurant.objects.all()
+    except Exception as e:
+        string = "%s %s"%(e,username)
+        return HttpResponse(string)
+    context.update({
         'header' : header,
-        'restaurant_list' : restaurant_list
-        }
-
+        'restaurant_list' : restaurant_list,
+        'username' : username,
+        })
     return render(request, 'food/restaurantListDisp.html', context)
 
 def menuDisplay(request, restaurant_id_t):
@@ -60,29 +75,16 @@ def signup(request):
         #Create New user
         new_user = models.UserValidation(user_name=user_name_p, password=password_p,
                     f_name=f_name, l_name=l_name, email_id=email, contact_no=contact_no,
-                    address=address, area=area, city=city, state=state)
-       
+                    address=address, area=area, city=city, state=state, zipcode=zipcode)
         new_user.save()
-        """
-        #User Meta
-        meta_list = []
-        meta_list.append(models.UserMeta(user_id=new_user, metaclass='f_name', metavalue=f_name))
-        meta_list.append(models.UserMeta(user_id=new_user, metaclass='l_name', metavalue=l_name))
-        meta_list.append(models.UserMeta(user_id=new_user, metaclass='email', metavalue=email))
-        meta_list.append(models.UserMeta(user_id=new_user, metaclass='contact_no', metavalue=contact_no))
-        meta_list.append(models.UserMeta(user_id=new_user, metaclass='address', metavalue=address))
-        meta_list.append(models.UserMeta(user_id=new_user, metaclass='area', metavalue=area))
-        meta_list.append(models.UserMeta(user_id=new_user, metaclass='city', metavalue=city))
-        meta_list.append(models.UserMeta(user_id=new_user, metaclass='zipcode', metavalue=zipcode))
-        """
+
     except exceptions.ValidationError as e:
         errmsg,code,whitelist = e.args
         return render(request,'food/signupForm.html',{'error_message':errmsg}) 
     except Exception as e:
-        #return HttpResponse("Error! %s (%s)"%(e.message, type(e)))
         return HttpResponse(e)
     string = "Success %s %s"%(user_name_p, password_p)
-    return HttpResponse(string)
+    return HttpResponseRedirect(reverse('food:RestaurantList', args=(new_user.user_name,)))
 
 def validateUserName(user_name):
     try:
@@ -90,3 +92,21 @@ def validateUserName(user_name):
         return False
     except models.UserValidation.DoesNotExist:
         return True
+
+def loginPage(request):
+    return render(request, 'food/login.html', )
+
+def loginValidate(request):
+    try:
+        username = request.POST['user_name']
+        password = request.POST['password']
+        
+        q = models.UserValidation.objects.get(user_name=username, password=password) 
+        return HttpResponseRedirect(reverse('food:RestaurantList', args=(q.user_name,)))   
+
+    
+    except models.UserValidation.DoesNotExist:
+        e = "Invalid Username/Password"
+        return render(request, 'food/login.html', {'error_message':e})
+    except Exception as e:
+        return render(request, 'food/login.html', {'error_message':e})

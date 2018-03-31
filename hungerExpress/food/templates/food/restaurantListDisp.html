@@ -1,15 +1,31 @@
 <ul>
     {{ header }}
 </ul>
+{% if location_specific %}
+<ul>
+    <form action="{% url 'food:RestaurantList' username %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="area_check" value='FALSE' />
+    <a href="#" onclick="document.forms[0].submit(); return False;">To go back to full list Click Here!</a>
+    </form>
+</ul>
+{% else %}
+<ul>
+    <form action="{% url 'food:RestaurantList' username %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="area_check" value='TRUE' />
+    <a href="#" onclick="document.forms[0].submit(); return False;">To check the restaurants in your area, Click Here!</a>
+    </form>
+</ul>
+{% endif %}
+<ul>
 {% if restaurant_list %}
     <ul>
     {% for restaurant in restaurant_list %}
-        <!--<li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li> -->
-        <!--<li>{{ restaurant.name }}</li>-->
         <li><a href="{% url 'food:menu' restaurant.id %}">{{ restaurant.name }}</a></li>
     {% endfor %}
     </ul>
 {% else %}
-    <p>No Restuarant is available in this area</p>
+    <p>No restaurant found!</p>
 {% endif %}
-
+</ul>

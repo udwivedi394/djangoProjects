@@ -1,0 +1,6 @@
+{% if error_message %}<p><strong>{{ error_message }}</strong><p>{% endif %}
+<ul>
+    <p><strong>Hi! Welcome to HungerExpress</strong></p>
+    <p>Please Login to make a gourmet journey</p>
+    <a href="{% url 'food:login' %}">Login</a>
+</ul>

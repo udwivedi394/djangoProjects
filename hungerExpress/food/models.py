@@ -43,6 +43,7 @@ class UserValidation(models.Model):
     area = models.CharField(max_length=20, null=True)
     city = models.CharField(max_length=20, null=True)
     state = models.CharField(max_length=20, null=True)
+    zipcode= models.DecimalField(max_digits=6, decimal_places=0)
     def __str__(self):
         return self.user_name
 
@@ -60,7 +61,7 @@ class Restaurant(models.Model):
     zipcode = models.CharField(max_length=6,
                 validators=[RegexValidator(regex='^.{6}$',message='Length has to be 6', code='LengthError')])
 
-    contact_no = models.CharField(max_length=10, unique=True)
+    contact_no = models.CharField(max_length=20)#, unique=True)
 
     def __str__(self):
         return self.name
