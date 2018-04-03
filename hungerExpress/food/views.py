@@ -4,6 +4,11 @@ from django.core.validators import EmailValidator
 from django.core import exceptions
 from django.urls import reverse
 from . import models
+import datetime
+
+GST_RATE = 5
+MAX_DISCOUNT = 30000
+DISCOUNT_RATE = 15
 
 # Create your views here.
 def index(request):
@@ -35,13 +40,15 @@ def restaurantDisplay(request, username):
         })
     return render(request, 'food/restaurantListDisp.html', context)
 
-def menuDisplay(request, restaurant_id_t):
+def menuDisplay(request, username, restaurant_id_t):
     header = 'Please find below the Menu served by us:'
     menu_list = models.Menu.objects.filter(restaurant_id=restaurant_id_t)
     
     context = {
         'header' : header,
         'menu_item_list' : menu_list,
+        'restaurant_id' : restaurant_id_t,
+        'username' : username,
     }
 
     return render(request, 'food/menuDisplay.html', context)
@@ -109,4 +116,66 @@ def loginValidate(request):
         e = "Invalid Username/Password"
         return render(request, 'food/login.html', {'error_message':e})
     except Exception as e:
-        return render(request, 'food/login.html', {'error_message':e})
+        #return render(request, 'food/login.html', {'error_message':e})
+        return HttpResponseRedirect(reverse('food:RestaurantList', args=(q.user_name,)))   
+
+def placeOrder(request, restaurant_id_t, username):
+    menu_item_ids = list(map(int, request.POST.getlist('menu')))
+    menu_item_qtys = list(map(int, request.POST.getlist('qty')))
+    menu_item_ext_qtys = list(map(float, request.POST.getlist('extqty')))
+
+    menu_list = models.Menu.objects.filter(restaurant_id=restaurant_id_t)
+    user = models.UserValidation.objects.get(user_name=username)
+    user_id_t = user.id
+    
+    if sum(menu_item_qtys)==0:
+        context = {
+        'header' : 'Please find below the menu served by us!',
+        'menu_item_list' : menu_list,
+        'restaurant_id' : restaurant_id_t,
+        'error_message': 'No item selected!'}
+        return render(request,'food/menuDisplay.html',context)
+    
+    string = "Hi! Order placed" + '<br>'
+    string += ' '.join(str(i) for i in menu_item_ids) + '<br>'
+    string += ' '.join(str(i) for i in menu_item_qtys) + '<br>'
+    string += ' '.join(str(i) for i in menu_item_ext_qtys)
+
+    order_header = models.OrderHeader(user_id=user_id_t, restaurant_id=restaurant_id_t,change_by_user_id=user_id_t)
+    order_header.save()
+
+    order_list = []
+    order_value = 0
+    #place orders
+    #try:
+    if request:
+        for ctr in range(len(menu_item_ids)):
+            if menu_item_qtys[ctr] > 0:
+                menu_item = menu_list.get(pk=menu_item_ids[ctr])
+                new_order = models.OrderDetail(base_price=menu_item.price,
+                            quantity=menu_item_qtys[ctr], extended_price=menu_item.price*menu_item_qtys[ctr]*100,
+                            order_date=datetime.datetime.now(), change_by_user_id=user_id_t,
+                            item_id=menu_item.item_id, order_id=order_header.id, restaurant_id = restaurant_id_t,
+                            user_id = user_id_t)
+                order_list.append(new_order)
+                order_value += menu_item.price*menu_item_qtys[ctr]*100
+        tax = (GST_RATE)*order_value
+        discount = max(MAX_DISCOUNT,(DISCOUNT_RATE)*order_value)
+        net_amount = order_value+tax-discount
+        
+        order_header.order_value = order_value
+        order_header.taxes = tax
+        order_header.discount = discount
+        order_header.net_amount = net_amount
+
+        order_header.save()
+        
+        context = { 'header': 'Thank you for using HungerExpress! Your order has been successfully placed.',
+                    'order_list':order_list,
+                    'order_header':order_header,
+                    'menu':menu_list,
+                    'username': username}
+        return render(request, 'food/orderSummary.html', context)
+
+    #except Exception as e:
+    #    return HttpResponse(e)                   

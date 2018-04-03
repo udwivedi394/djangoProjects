@@ -1,0 +1,16 @@
+<head>
+   <div>{{header}}</div>
+</head>
+
+<body>
+    <div>
+        <table>
+        {% for order_item in order_list %}
+        <tr>
+            <td>{{ menu.filter }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+    </div>       
+</body>
+

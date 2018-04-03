@@ -301,4 +301,103 @@ The SQL scripts are stored in directory ./SQLscripts/
 Restaurant:
 For the sake of data, removed the unique constraint from contact_no field in food_restaurant table
 
+25. Data for Menu items is also populated now.
 
+26. Creating the order page.
+	Menu Item		Price - 1 +  ExtendedPrice
+	..................................................
+	Order Total			     Sumtotal
+	Continue..
+
+Page is working fine.
+
+27. Creating table Orders
+	ORDER HEADER: OrderHeader
+	attributes:
+	-id; pk
+	-user_id; fk (UserValidation.id)
+	-restaurant_id; fk (Restaurant.id)
+	-number_of_items; int
+	-order_value; 	number(8,2)
+	-taxes;		number(8,2)
+	-discount;	float
+	-net_amount; 	BigIteger, multiplier=100, to find actual value divide by 100
+	-order_date; datetime
+	-date_created; should be handled with trigger
+	-date_modified; should be handled with trigger
+	-change_by_user_id; should be handled with trigger
+
+	ORDER DETAIL: OrderDetail
+	-id; pk
+	-order_id; fk (OrderHeader.id)
+	-user_id; fk (UserValidation.id)
+	-item_id; fk (Menu.id)
+	-restaurant_id; fk (Restaurant.id)
+	-base_price; 
+	-qty;
+	-extendend_price; BigInteger, multiplier=100
+	-order_date; datetime
+	-date_created; should be handled by trigger
+	-date_modified; should be handled by trigger
+	-change_by_user_id; should be handled by trigger
+
+28. python3 manage.py makemigrations food --> successful
+Migrations for 'food':
+  food/migrations/0004_auto_20180401_1129.py
+    - Create model OrderDetail
+    - Create model OrderHeader
+    - Alter field price on menu
+    - Add field item_id to orderdetail
+    - Add field order_id to orderdetail
+    - Add field restaurant_id to orderdetail
+    - Add field user_id to orderdetail
+
+29. python3 manage.py sqlmigrate food 0004 --> successful
+
+30. python3 manage.py migrate --> successful
+Operations to perform:
+  Apply all migrations: admin, auth, contenttypes, food, sessions
+Running migrations:
+  Applying food.0004_auto_20180401_1129... OK
+
+31. In order to make the Header entry, making the fields null which would be populated later.
+python3 manage.py makemigrations food
+Migrations for 'food':
+  food/migrations/0005_auto_20180402_1109.py
+    - Alter field date_created on orderheader
+    - Alter field date_modified on orderheader
+    - Alter field discount on orderheader
+    - Alter field net_amount on orderheader
+    - Alter field number_of_items on orderheader
+    - Alter field order_date on orderheader
+    - Alter field order_value on orderheader
+    - Alter field taxes on orderheader
+
+python3 manage.py sqlmigrate food 0005
+python3 manage.py migrate
+
+32. Renaming the model attributes with prefix as id, because after the migration in case of foreign keys the _id is automatically prefixed with field names
+python3 manage.py makemigrations food
+Migrations for 'food':
+  food/migrations/0006_auto_20180402_1117.py
+    - Rename field restaurant_id on menu to restaurant
+    - Rename field change_by_user_id on orderdetail to change_by_user
+    - Rename field item_id on orderdetail to item
+    - Rename field order_id on orderdetail to order
+    - Rename field restaurant_id on orderdetail to restaurant
+    - Rename field user_id on orderdetail to user
+    - Rename field change_by_user_id on orderheader to change_by_user
+    - Rename field restaurant_id on orderheader to restaurant
+    - Rename field user_id on orderheader to user
+    - Alter field order_date on orderheader
+
+python3 manage.py sqlmigrate food 0006
+
+python3 manage.py migrate
+
+33. Migrations for 'food':
+  food/migrations/0007_auto_20180402_2329.py
+    - Alter field date_created on orderdetail
+    - Alter field date_modified on orderdetail
+    - Alter field order_date on orderheader
+Changed, date_created, date_modified, to NULL

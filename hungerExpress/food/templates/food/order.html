@@ -1,0 +1,28 @@
+<ul>
+<table>
+<tr>
+<td>
+<input type="button" name="plus" value='+' onclick="increaseValue('qty')">
+</td>
+<td>
+<input type="text" maxlength="2" size='20px' name="qty" id="qty" value=0>
+</td>
+<td>
+<input type="button" name="minus" value='-' onclick="decreaseValue('qty')">
+</td>
+</tr>
+</table>
+</ul>
+
+<script type="text/javascript">
+    function increaseValue(id){
+        q = document.getElementById(id)
+        q.value++;
+    }
+    
+    function decreaseValue(id){
+        q = document.getElementById(id)
+        if (q.value>0)
+            q.value--;
+    }
+</script>

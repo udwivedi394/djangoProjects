@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+import datetime
 
 """
 def check_category(value,category_p):
@@ -68,11 +69,39 @@ class Restaurant(models.Model):
 
 class Menu(models.Model):
     item_id = models.AutoField(primary_key=True)
-    restaurant_id = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     item_name = models.CharField(max_length=40)
     category = models.CharField(max_length=40, null=True)
     sub_category = models.CharField(max_length=40, null=True)#, validators=[CheckCategory(category)])
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    price = models.DecimalField(max_digits=7, decimal_places=2)
     
     def __str__(self):
         return self.item_name
+
+#Order Header: 01-Apr-2018
+class OrderHeader(models.Model):
+    user = models.ForeignKey(UserValidation, on_delete=models.CASCADE, related_name='header_user_id')
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    number_of_items = models.IntegerField(null=True)
+    order_value = models.FloatField(null=True)
+    taxes = models.FloatField(null=True)
+    discount = models.FloatField(null=True)
+    net_amount = models.BigIntegerField(null=True)
+    order_date = models.DateTimeField(null=True,default=datetime.datetime.now())
+    date_created = models.DateTimeField(null=True)
+    date_modified = models.DateTimeField(null=True) 
+    change_by_user = models.ForeignKey(UserValidation, on_delete=models.CASCADE)
+
+#Order Detail: 01-Apr-2018
+class OrderDetail(models.Model):
+    order = models.ForeignKey(OrderHeader, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserValidation, on_delete=models.CASCADE, related_name='detail_user_id')
+    item = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    base_price = models.DecimalField(max_digits=7, decimal_places=2)
+    quantity = models.IntegerField()
+    extended_price = models.BigIntegerField()
+    order_date = models.DateTimeField()
+    date_created = models.DateTimeField(null=True)
+    date_modified = models.DateTimeField(null=True)
+    change_by_user = models.ForeignKey(UserValidation, on_delete=models.CASCADE, related_name='last_modified_by_user_id')

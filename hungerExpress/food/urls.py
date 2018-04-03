@@ -7,9 +7,10 @@ app_name = 'food'
 urlpatterns = [
     path('', views.index, name='index'),
     path('loc/<str:username>/', views.restaurantDisplay, name="RestaurantList"),
-    path('restaurant/<int:restaurant_id_t>/', views.menuDisplay, name="menu"),
+    path('restaurant/<str:username>/<int:restaurant_id_t>/', views.menuDisplay, name="menu"),
     path('signup/', views.signupform, name="signupform"),
     path('aftersignup/', views.signup, name="signup"),
     path('login/', views.loginPage, name="login"),
     path('loginValidate/', views.loginValidate, name="loginValidate"),
+    path('orderstatus/<str:username>/<int:restaurant_id_t>', views.placeOrder, name="placeOrder"),
 ]
